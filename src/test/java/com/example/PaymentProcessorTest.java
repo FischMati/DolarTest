@@ -37,6 +37,33 @@ public class PaymentProcessorTest {
         Assertions.assertTrue(paymentExists);
     }
 
+    @Test
+    public void testShouldNotRegisterSamePersonPayment() {
+        Date paymentDate = new Date();
+        PaymentData data = new PaymentData(UUID.randomUUID(), senderId, senderId, 1.25, paymentDate);
+        Payment payment = new Payment(data);
+
+        Assertions.assertThrows(InvalidPaymentException.class, () -> paymentProcessor.registerPayment(payment));
+    }
+
+    @Test
+    public void testShouldNotRegisterNegativePayment() {
+        Date paymentDate = new Date();
+        PaymentData data = new PaymentData(UUID.randomUUID(), senderId, receiverId, -1.25, paymentDate);
+        Payment payment = new Payment(data);
+
+        Assertions.assertThrows(InvalidPaymentException.class, () -> paymentProcessor.registerPayment(payment));
+    }
+
+    @Test
+    public void testShouldNotRegisterZeroPayment() {
+        Date paymentDate = new Date();
+        PaymentData data = new PaymentData(UUID.randomUUID(), senderId, receiverId, 0, paymentDate);
+        Payment payment = new Payment(data);
+
+        Assertions.assertThrows(InvalidPaymentException.class, () -> paymentProcessor.registerPayment(payment));
+    }
+
     public void testRefund() {
 
     }

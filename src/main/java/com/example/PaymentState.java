@@ -3,5 +3,7 @@ package com.example;
 public enum PaymentState {
     CREATED, 
     REGISTERED,
-    REFUNDED
+    REFUNDED,
+    SENDER_CHARGED,
+    SENDER_PAID
 }

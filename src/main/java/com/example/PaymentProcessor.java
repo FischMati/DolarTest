@@ -1,26 +1,13 @@
 package com.example;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-/*
- * Descripción:
-Implementa una clase PaymentProcessor que maneje transacciones de pago. Debe incluir funcionalidades para:
-
-Registrar pagos.
-Validar pagos.
-Procesar reembolsos.
-Generar reportes de transacciones.
-Requisitos:
-Escribir pruebas unitarias para cada método.
-Asegurarse de que el código esté limpio y listo para producción.
-Utilizar patrones de diseño adecuados.
- */
-
 public class PaymentProcessor {
-    private List<Payment> payments = new ArrayList<>();
+    private List<Payment> payments = Collections.synchronizedList(new ArrayList<>());
 
     public List<Payment> getPayments() {
         return payments;
@@ -32,6 +19,32 @@ public class PaymentProcessor {
 
         payments.add(payment);
         payment.setState(PaymentState.REGISTERED);
+    }
+
+    public void processPayments() {
+        payments
+            .stream()
+            .parallel()
+            .forEach(p -> {
+                synchronized (p) {
+                    if(p.getState() == PaymentState.REGISTERED){
+                        p.setState(PaymentState.SENDER_CHARGED);
+                    }
+                }
+             }
+            );
+    }
+
+    public Payment onAmountRecieved(UUID paymentId, UUID userId) throws PaymentNotFoundException {
+        Payment payment = payments
+            .stream()
+            .filter(p -> p.data().id().equals(paymentId) && p.data().senderId().equals(userId))
+            .findFirst()
+            .orElseThrow(() -> new PaymentNotFoundException(paymentId));
+
+        payment.setState(PaymentState.SENDER_PAID);
+
+        return payment;
     }
 
     public boolean validatePayment(Payment payment){
